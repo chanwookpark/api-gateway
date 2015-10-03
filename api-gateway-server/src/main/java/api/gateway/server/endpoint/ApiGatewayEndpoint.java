@@ -1,5 +1,6 @@
-package api.gateway.server;
+package api.gateway.server.endpoint;
 
+import api.gateway.server.EventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,8 @@ public class ApiGatewayEndpoint {
         try {
             final Event<EventContext> event = Event.wrap(requestContext);
 
-            this.eventBus.sendAndReceive("api.request", event, (Event<EventContext> s) -> {
+            this.eventBus.sendAndReceive("api.request", event,
+                    (Event<EventContext> s) -> {
                 final EventContext responseContext = s.getData();
                 result.setResult(responseContext.getResponse());
             });

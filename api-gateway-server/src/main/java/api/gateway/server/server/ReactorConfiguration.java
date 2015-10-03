@@ -1,5 +1,6 @@
-package api.gateway.server;
+package api.gateway.server.server;
 
+import api.gateway.server.EventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
