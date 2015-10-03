@@ -8,27 +8,27 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class EventContext {
 
-    private final HttpServletRequest request;
-    private final HttpServletResponse response;
+    private final HttpServletRequest httpRequest;
+    private final HttpServletResponse httpResponse;
 
     private final String apiUrl;
     private final String apiVersion;
     private final String apiName;
 
-    public EventContext(String apiName, String apiVersion, String apiUrl, HttpServletRequest request, HttpServletResponse response) {
+    public EventContext(String apiName, String apiVersion, String apiUrl, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         this.apiName = apiName;
         this.apiVersion = apiVersion;
         this.apiUrl = apiUrl;
-        this.request = request;
-        this.response = response;
+        this.httpRequest = httpRequest;
+        this.httpResponse = httpResponse;
     }
 
-    public HttpServletRequest getRequest() {
-        return request;
+    public HttpServletRequest getHttpRequest() {
+        return httpRequest;
     }
 
-    public HttpServletResponse getResponse() {
-        return response;
+    public HttpServletResponse getHttpResponse() {
+        return httpResponse;
     }
 
     public String getApiName() {
@@ -47,8 +47,8 @@ public class EventContext {
     public String toString() {
         return "EventContext{" +
                 "apiName='" + apiName + '\'' +
-                ", request=" + request +
-                ", response=" + response +
+                ", httpRequest=" + httpRequest +
+                ", httpResponse=" + httpResponse +
                 ", apiUrl='" + apiUrl + '\'' +
                 ", apiVersion='" + apiVersion + '\'' +
                 '}';

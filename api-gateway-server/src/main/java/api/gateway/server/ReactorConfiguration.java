@@ -7,7 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import reactor.Environment;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
-import reactor.bus.selector.Selectors;
+
+import static reactor.bus.selector.Selectors.$;
 
 /**
  * @author chanwook
@@ -21,15 +22,18 @@ public class ReactorConfiguration {
     }
 
     @Bean
-    public EventBus reactor(ApiGatewayServer server, Environment env) {
+    public EventBus reactor(ApiGatewayServer server) {
+        Environment.initialize();
 
         Logger logger = LoggerFactory.getLogger("api.gateway.server");
 
-        final EventBus eventBus = EventBus.create(env);
+        final EventBus eventBus = EventBus.create(Environment.get());
 
-        eventBus.on(Selectors.$("api.request"), (Event<EventContext> event) -> {
-            logger.info("API Request: {}", event);
+        eventBus.receive($("api.request"), (Event<EventContext> event) -> {
+            logger.info("API Request:: {}", event);
             server.execute(event);
+            logger.info("API Response:: {}", event);
+            return event;
         });
 
         return eventBus;
