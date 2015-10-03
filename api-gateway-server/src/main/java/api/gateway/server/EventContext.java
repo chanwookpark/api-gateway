@@ -15,6 +15,8 @@ public class EventContext {
     private final String apiVersion;
     private final String apiName;
 
+    private String response;
+
     public EventContext(String apiName, String apiVersion, String apiUrl, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
         this.apiName = apiName;
         this.apiVersion = apiVersion;
@@ -52,5 +54,13 @@ public class EventContext {
                 ", apiUrl='" + apiUrl + '\'' +
                 ", apiVersion='" + apiVersion + '\'' +
                 '}';
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
+    }
+
+    public String getResponse() {
+        return response;
     }
 }

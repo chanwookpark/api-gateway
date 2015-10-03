@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 
@@ -31,23 +32,26 @@ public class ApiGatewayEndpoint {
     }
 
     @RequestMapping(value = "/{apiName}/{apiVersion}/{apiUrl}")
-    public void handleRequest(HttpServletRequest request,
-                              HttpServletResponse response,
-                              @PathVariable String apiName,
-                              @PathVariable String apiVersion,
-                              @PathVariable String apiUrl) {
+    public DeferredResult<String> handleRequest(HttpServletRequest request,
+                                                HttpServletResponse response,
+                                                @PathVariable String apiName,
+                                                @PathVariable String apiVersion,
+                                                @PathVariable String apiUrl) {
 
-        final EventContext context = new EventContext(apiName, apiVersion, apiUrl, request, response);
+        final EventContext requestContext = new EventContext(apiName, apiVersion, apiUrl, request, response);
+        final DeferredResult<String> result = new DeferredResult<>();
 
         try {
-            final Event<EventContext> event = Event.wrap(context, "api.response");
+            final Event<EventContext> event = Event.wrap(requestContext);
 
-            eventBus.sendAndReceive("api.request", event, (Event<EventContext> s) -> {
-                System.out.print("HTTP Endpoint Result::: " + s.getData());
+            this.eventBus.sendAndReceive("api.request", event, (Event<EventContext> s) -> {
+                final EventContext responseContext = s.getData();
+                result.setResult(responseContext.getResponse());
             });
         } catch (Exception ex) {
             logger.error("Failed API executing", ex);
-            throw new RuntimeException("Fail!");
+            result.setErrorResult(ex);
         }
+        return result;
     }
 }

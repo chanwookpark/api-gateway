@@ -12,5 +12,6 @@ public class ApiGatewayServer {
 
     public void execute(Event<EventContext> event) {
         logger.info("Pass through Gateway::: " + event);
+        event.getData().setResponse("OK!");
     }
 }
