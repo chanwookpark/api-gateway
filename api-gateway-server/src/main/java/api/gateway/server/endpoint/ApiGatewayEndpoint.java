@@ -4,15 +4,17 @@ import api.gateway.server.EventContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author chanwook
@@ -33,27 +35,34 @@ public class ApiGatewayEndpoint {
     }
 
     @RequestMapping(value = "/{apiName}/{apiVersion}/{apiUrl}")
-    public DeferredResult<String> handleRequest(HttpServletRequest request,
-                                                HttpServletResponse response,
-                                                @PathVariable String apiName,
-                                                @PathVariable String apiVersion,
-                                                @PathVariable String apiUrl) {
+    public ResponseBodyEmitter handleRequest(HttpServletRequest request,
+                                             HttpServletResponse response,
+                                             @PathVariable String apiName,
+                                             @PathVariable String apiVersion,
+                                             @PathVariable String apiUrl) {
 
         final EventContext requestContext = new EventContext(apiName, apiVersion, apiUrl, request, response);
-        final DeferredResult<String> result = new DeferredResult<>();
+        final ResponseBodyEmitter emitter = new ResponseBodyEmitter();
 
         try {
             final Event<EventContext> event = Event.wrap(requestContext);
 
             this.eventBus.sendAndReceive("api.request", event,
                     (Event<EventContext> s) -> {
-                final EventContext responseContext = s.getData();
-                result.setResult(responseContext.getResponse());
-            });
+                        try {
+                            final EventContext responseContext = s.getData();
+                            emitter.send(responseContext.getResponse(), MediaType.APPLICATION_JSON);
+                            emitter.complete();
+                        } catch (IOException e) {
+                            logger.error("Failed...", e);
+                            emitter.completeWithError(e);
+                        }
+                    });
+
         } catch (Exception ex) {
             logger.error("Failed API executing", ex);
-            result.setErrorResult(ex);
+            emitter.completeWithError(ex);
         }
-        return result;
+        return emitter;
     }
 }
