@@ -1,6 +1,7 @@
 package api.gateway.server.server;
 
 import api.gateway.server.EventContext;
+import api.gateway.server.discovery.ServiceDiscovery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -15,11 +16,11 @@ import static reactor.bus.selector.Selectors.$;
  * @author chanwook
  */
 @Configuration
-public class ReactorConfiguration {
+public class GatewayServerConfiguration {
 
     @Bean
-    public ApiGatewayServer apiGatewayServer() {
-        return new ApiGatewayServer();
+    public ApiGatewayServer apiGatewayServer(ServiceDiscovery serviceDiscovery) {
+        return new ApiGatewayServer(serviceDiscovery);
     }
 
     @Bean

@@ -27,14 +27,14 @@ public class ServiceInstanceRegister {
     @PostConstruct
     public void register() {
         try {
-            final String serverUrl = env.getProperty("service.server.url");
+            final String serverUrl = env.getProperty("service.server.host");
 
             final String name = env.getProperty("service.instance.name");
-            final String url = "url...";
+            final String host = getHost();
             final String version = env.getProperty("service.instance.version");
 
-            if (StringUtils.hasText(name) && StringUtils.hasText(url) && StringUtils.hasText(version)) {
-                ServiceRegisterRequest request = new ServiceRegisterRequest(name, url, version);
+            if (StringUtils.hasText(name) && StringUtils.hasText(host) && StringUtils.hasText(version)) {
+                ServiceRegisterRequest request = new ServiceRegisterRequest(name, host, version);
                 ResponseEntity<String> responseEntity = restTemplate.postForEntity(serverUrl + "/discovery", request, String.class);
 
                 if (!responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -42,7 +42,7 @@ public class ServiceInstanceRegister {
                 }
 
                 if (logger.isInfoEnabled()) {
-                    logger.info("Service instance register:: name=" + name + ", version=" + version + ", url=" + url);
+                    logger.info("Service instance register:: name=" + name + ", version=" + version + ", host=" + host);
                 }
             } else {
                 if (logger.isDebugEnabled()) {
@@ -52,5 +52,14 @@ public class ServiceInstanceRegister {
         } catch (Exception ex) {
             logger.error("Service instance register failed", ex);
         }
+    }
+
+    private String getHost() {
+        String port = env.getProperty("server.port");
+        if (!StringUtils.hasText(port)) {
+            port = "8080";
+        }
+        final String hostName = "http://localhost";
+        return hostName + ":" + port;
     }
 }
